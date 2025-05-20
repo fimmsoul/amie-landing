@@ -1358,12 +1358,24 @@
                 transform: scale(0.8) translateY(10px);
             }
         }
+
+        @media (max-width: 640px) {
+            .feature-section {
+                min-height: 35vh;
+                padding: 1.2rem 0;
+            }
+        }
+
+        #main-header {
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+            will-change: transform, opacity;
+        }
     </style>
 </head>
 <body>
     <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <header class="flex justify-between items-center py-6 px-8 sticky top-0 bg-white/95 backdrop-blur-sm z-50 shadow-sm">
+        <header id="main-header" class="flex justify-between items-center py-6 px-8 sticky top-0 bg-white/95 backdrop-blur-sm z-50 shadow-sm">
             <div class="flex items-center">
                 <a href="#" class="flex items-center">
                     <h1 class="text-3xl font-bold text-amie-pink mr-1">Amié</h1>
@@ -1372,12 +1384,12 @@
             </div>
 
             <div class="flex items-center">
-                <a href="https://amieonline.com/" class="px-8 py-3 rounded-full bg-gradient-to-r from-amie-pink to-amie-blue text-white text-sm font-medium hover:shadow-md transition-all" target="_blank">Start Reaction</a>
+                <a id="hero-cta" href="https://amieonline.com/" class="px-6 py-3 md:px-8 md:py-4 rounded-full bg-gradient-to-r from-amie-pink to-amie-blue text-white text-sm font-medium hover:shadow-md transition-all" target="_blank">Start Reaction</a>
             </div>
         </header>
 
         <!-- Hero Section -->
-        <main class="hero-container">
+        <main class="hero-container mb-8 md:mb-16">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center w-full">
                 <div class="py-8 md:py-0">
                     <h1 class="text-5xl sm:text-6xl md:text-7xl font-bold text-amie-pink mb-6 sm:mb-8">Amié</h1>
@@ -1431,9 +1443,9 @@
         </main>
 
         <!-- One-to-One Matching Section -->
-        <section class="feature-section border-t border-gray-100">
+        <section class="feature-section border-t border-gray-100 pt-4 md:pt-0">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
-                <div class="mb-16 max-w-3xl">
+                <div class="mb-4 md:mb-16 max-w-3xl">
                     <p class="text-sm font-medium text-amie-pink mb-2">Chemistry Advantage</p>
                     <h2 class="text-5xl font-bold text-gray-900 mb-6">
                         One-to-One<br>Matching
@@ -1499,7 +1511,7 @@
         <!-- AI Chemistry Analysis Section -->
         <section class="feature-section border-t border-gray-100">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
-                <div class="order-1 lg:order-1 mb-16 max-w-3xl">
+                <div class="order-1 lg:order-1 mb-4 md:mb-16 max-w-3xl">
                     <p class="text-sm font-medium text-amie-blue mb-2">Smart Technology</p>
                     <h2 class="text-5xl font-bold text-gray-900 mb-2">
                         The Chemist
@@ -1568,7 +1580,7 @@
         <!-- Balanced Chemical Equation Section -->
         <section class="feature-section border-t border-gray-100">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
-                <div class="order-1 lg:order-2 mb-16 max-w-3xl">
+                <div class="order-1 lg:order-2 mb-4 md:mb-16 max-w-3xl">
                     <p class="text-sm font-medium text-amie-pink mb-2">Better Demographics</p>
                     <h2 class="text-5xl font-bold text-gray-900 mb-6">
                         Ultimate Equation<br>for Balanced Ratio
@@ -2115,6 +2127,52 @@
                 });
             });
         });
+
+        // 헤더 노출 제어 스크립트
+        function isElementInViewport(el) {
+            if (!el) return false;
+            const rect = el.getBoundingClientRect();
+            return rect.bottom > 0 && rect.top < window.innerHeight;
+        }
+
+        function handleHeaderVisibility() {
+            const header = document.getElementById('main-header');
+            const cta = document.getElementById('hero-cta');
+            if (!header || !cta) return;
+
+            // 모바일에서만 적용
+            if (window.innerWidth > 768) {
+                header.style.transform = '';
+                header.style.opacity = '';
+                header.style.pointerEvents = '';
+                return;
+            }
+
+            // 스크롤 위치 확인 (최상단일 경우 헤더는 항상 표시)
+            if (window.scrollY <= 10) {
+                header.style.transform = 'translateY(0)';
+                header.style.opacity = '1';
+                header.style.pointerEvents = '';
+                return;
+            }
+
+            const rect = cta.getBoundingClientRect();
+            if (rect.bottom < 0) {
+                // CTA 버튼이 화면 위로 스크롤되면 헤더 숨김
+                header.style.transform = 'translateY(-100%)';
+                header.style.opacity = '0';
+                header.style.pointerEvents = 'none';
+            } else {
+                // 그 외에는 항상 헤더가 보이게!
+                header.style.transform = 'translateY(0)';
+                header.style.opacity = '1';
+                header.style.pointerEvents = '';
+            }
+        }
+
+        window.addEventListener('scroll', handleHeaderVisibility);
+        window.addEventListener('resize', handleHeaderVisibility);
+        document.addEventListener('DOMContentLoaded', handleHeaderVisibility);
     </script>
 </body>
 </html> 
