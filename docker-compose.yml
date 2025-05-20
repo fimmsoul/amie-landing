@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  landingpage:
+    build: .
+    container_name: amie-landing
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    volumes:
+      - ./landingpage:/usr/share/nginx/html
+    networks:
+      - amie-network
+
+networks:
+  amie-network:
+    driver: bridge 
