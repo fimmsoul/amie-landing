@@ -383,7 +383,7 @@
             }
         }
         
-        /* Balance Animation */
+        /* Balanced Ratio Animation */
         .balance-container {
             position: relative;
             height: 400px;
@@ -402,85 +402,126 @@
             z-index: -1;
         }
         
-        .balance {
+        .ratio-display {
             position: relative;
             width: 300px;
-            height: 200px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 40px;
         }
         
-        .balance-center {
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 150px;
-            background: #333;
-            border-radius: 5px;
+        .ratio-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 20px;
         }
         
-        .balance-beam {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) rotate(0deg);
-            width: 250px;
-            height: 10px;
-            background: #333;
-            border-radius: 5px;
-            transform-origin: center;
-            animation: balance-tilt 5s infinite ease-in-out;
-        }
-        
-        .balance-left, .balance-right {
-            position: absolute;
-            width: 60px;
-            height: 60px;
+        .profile-dot {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
             color: white;
+            font-weight: bold;
+            font-size: 12px;
+            position: relative;
+            opacity: 0;
+            transform: scale(0);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
         
-        .balance-left {
-            top: -25px;
-            left: 10px;
-            background: #FF6C8F;
+        .profile-dot.female {
+            background: linear-gradient(45deg, #FF6C8F, #FF9CB6);
+            animation: appear-dot 0.5s forwards;
         }
         
-        .balance-right {
-            top: -25px;
-            right: 10px;
-            background: #6FB6FF;
+        .profile-dot.male {
+            background: linear-gradient(45deg, #6FB6FF, #A5D3FF);
+            animation: appear-dot 0.5s forwards;
         }
         
-        .balance-string-left, .balance-string-right {
+        @keyframes appear-dot {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+
+        
+        .match-percentage {
             position: absolute;
-            width: 2px;
-            height: 40px;
-            background: #333;
-            top: 20px;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #FF6C8F, #6FB6FF);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            box-shadow: 0 8px 20px rgba(255, 108, 143, 0.3);
+            animation: pulse-highlight 2s infinite;
+            z-index: 10;
         }
         
-        .balance-string-left {
-            left: 40px;
+        .match-percentage::after {
+            content: "Match Rate";
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 500;
+            color: #555;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
         }
         
-        .balance-string-right {
-            right: 40px;
+        .match-line {
+            position: absolute;
+            height: 2px;
+            background: none;
+            opacity: 0;
+            transform-origin: left;
+            border-radius: 2px;
+            z-index: 5;
+            overflow: visible;
         }
         
-        @keyframes balance-tilt {
+        .match-line::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: none;
+            filter: blur(1px);
+        }
+        
+        @keyframes pulse-highlight {
             0%, 100% {
-                transform: translateX(-50%) rotate(0deg);
+                transform: scale(1);
+                box-shadow: 0 8px 20px rgba(255, 108, 143, 0.3);
             }
-            25% {
-                transform: translateX(-50%) rotate(2deg);
-            }
-            75% {
-                transform: translateX(-50%) rotate(-2deg);
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 12px 25px rgba(255, 108, 143, 0.4);
             }
         }
         
@@ -1322,21 +1363,16 @@
 <body>
     <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
-        <header class="flex justify-between items-center py-5">
+        <header class="flex justify-between items-center py-6 px-8 sticky top-0 bg-white/95 backdrop-blur-sm z-50 shadow-sm">
             <div class="flex items-center">
                 <a href="#" class="flex items-center">
-                    <img src="images/logo.png" alt="Amié Logo" class="h-10 mr-2">
+                    <h1 class="text-3xl font-bold text-amie-pink mr-1">Amié</h1>
                 </a>
-                <span class="ml-2 px-2 py-1 bg-gray-100 text-xs font-medium rounded text-gray-600">Experiment</span>
+                <span class="ml-3 px-2 py-1 bg-gradient-to-r from-amie-pink/10 to-amie-blue/10 text-xs font-medium rounded-full text-gray-600 border border-gray-100">Beta</span>
             </div>
-            <div class="flex items-center space-x-6">
-                <a href="#" class="text-sm text-gray-600 hover:text-gray-900">FAQ</a>
-                <button class="p-2 rounded-full hover:bg-gray-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-                <a href="../index.html" class="px-6 py-2 rounded-md btn-primary text-sm font-medium">Sign in</a>
+
+            <div class="flex items-center">
+                <a href="https://amieonline.com/" class="px-8 py-3 rounded-full bg-gradient-to-r from-amie-pink to-amie-blue text-white text-sm font-medium hover:shadow-md transition-all" target="_blank">Start Reaction</a>
             </div>
         </header>
 
@@ -1348,7 +1384,7 @@
                     <h2 class="text-3xl sm:text-4xl md:text-5xl font-normal text-gray-900 mb-4 sm:mb-6 leading-tight">AI Chemist to find your perfect match</h2>
                     <p class="text-lg md:text-xl text-gray-600 mb-8 max-w-xl">Connect with Amié to find your perfect match based on personality, interests, and compatibility. Discover meaningful relationships tailored just for you.</p>
                     <div class="flex space-x-4">
-                        <a href="../index.html" class="px-6 py-3 md:px-8 md:py-4 rounded-md btn-primary font-medium text-base md:text-lg">Start Reaction</a>
+                        <a href="https://amieonline.com/" class="px-6 py-3 md:px-8 md:py-4 rounded-md btn-primary font-medium text-base md:text-lg" target="_blank">Start Reaction</a>
                     </div>
                 </div>
                 <div class="relative mx-auto lg:mx-0 w-full max-w-md lg:max-w-none">
@@ -1551,15 +1587,14 @@
                     </div>
                 </div>
                 
-                <!-- Balance Animation -->
+                <!-- Balanced Ratio Animation -->
                 <div class="order-2 lg:order-1 balance-container">
-                    <div class="balance">
-                        <div class="balance-center"></div>
-                        <div class="balance-beam"></div>
-                        <div class="balance-string-left"></div>
-                        <div class="balance-string-right"></div>
-                        <div class="balance-left">F</div>
-                        <div class="balance-right">M</div>
+                    <div class="ratio-display">
+                        <div class="ratio-grid" id="ratio-grid">
+                            <!-- Grid will be filled with JS -->
+                        </div>
+
+                        <div class="match-percentage">93%</div>
                     </div>
                 </div>
             </div>
@@ -1648,6 +1683,201 @@
     </div>
 
     <script>
+        // 모바일 메뉴 토글
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+            
+            // 스크롤 시 헤더에 그림자 추가/제거
+            const header = document.querySelector('header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 10) {
+                    header.classList.add('shadow-md');
+                    header.classList.remove('shadow-sm');
+                } else {
+                    header.classList.remove('shadow-md');
+                    header.classList.add('shadow-sm');
+                }
+            });
+            
+            // Balanced Ratio Animation
+            const ratioGrid = document.getElementById('ratio-grid');
+            if (ratioGrid) {
+                // Create profiles grid
+                const totalProfiles = 30;
+                const femaleCount = 15; 
+                const maleCount = 15;
+                const profiles = [];
+                
+                // Create female profiles
+                for (let i = 0; i < femaleCount; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'profile-dot female';
+                    dot.style.animationDelay = `${0.1 + (i * 0.05)}s`;
+                    dot.textContent = 'F';
+                    profiles.push(dot);
+                }
+                
+                // Create male profiles
+                for (let i = 0; i < maleCount; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'profile-dot male';
+                    dot.style.animationDelay = `${0.1 + ((i + femaleCount) * 0.05)}s`;
+                    dot.textContent = 'M';
+                    profiles.push(dot);
+                }
+                
+                // Shuffle array
+                for (let i = profiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [profiles[i], profiles[j]] = [profiles[j], profiles[i]];
+                }
+                
+                // Add to grid
+                profiles.forEach(profile => {
+                    ratioGrid.appendChild(profile);
+                });
+                
+                // Create match lines
+                setTimeout(() => {
+                    const femaleProfiles = document.querySelectorAll('.profile-dot.female');
+                    const maleProfiles = document.querySelectorAll('.profile-dot.male');
+                    const balanceContainer = document.querySelector('.balance-container');
+                    
+                                             // Create random matches
+                         const createRandomMatch = () => {
+                             const femaleIndex = Math.floor(Math.random() * femaleProfiles.length);
+                             const maleIndex = Math.floor(Math.random() * maleProfiles.length);
+                             
+                             const femaleProfile = femaleProfiles[femaleIndex];
+                             const maleProfile = maleProfiles[maleIndex];
+                             
+                             // Create a connection line
+                             const line = document.createElement('div');
+                             line.className = 'match-line';
+                             balanceContainer.appendChild(line);
+                             
+                             // Get positions
+                             const femaleRect = femaleProfile.getBoundingClientRect();
+                             const maleRect = maleProfile.getBoundingClientRect();
+                             const containerRect = balanceContainer.getBoundingClientRect();
+                             
+                             // Calculate line properties
+                             const x1 = femaleRect.left + femaleRect.width/2 - containerRect.left;
+                             const y1 = femaleRect.top + femaleRect.height/2 - containerRect.top;
+                             const x2 = maleRect.left + maleRect.width/2 - containerRect.left;
+                             const y2 = maleRect.top + maleRect.height/2 - containerRect.top;
+                             
+                             // Draw curved SVG path
+                             const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                             svg.setAttribute("width", "100%");
+                             svg.setAttribute("height", "100%");
+                             svg.style.position = "absolute";
+                             svg.style.top = "0";
+                             svg.style.left = "0";
+                             svg.style.pointerEvents = "none";
+                             balanceContainer.appendChild(svg);
+                             
+                             // Create path
+                             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                             
+                             // Calculate control points for a curved line
+                             const dx = x2 - x1;
+                             const dy = y2 - y1;
+                             const distance = Math.sqrt(dx * dx + dy * dy);
+                             
+                             // Calculate control point offset (more curve for longer distances)
+                             const curveOffset = Math.min(distance * 0.3, 50);
+                             
+                             // Create control points slightly above the direct line
+                             const midX = (x1 + x2) / 2;
+                             const midY = (y1 + y2) / 2 - curveOffset;
+                             
+                             // Create SVG path with a quadratic curve
+                             const pathD = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
+                             path.setAttribute("d", pathD);
+                             path.setAttribute("fill", "none");
+                             
+                             // Create gradient for path
+                             const gradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+                             const gradientId = `gradient-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                             gradient.setAttribute("id", gradientId);
+                             gradient.setAttribute("gradientUnits", "userSpaceOnUse");
+                             gradient.setAttribute("x1", x1);
+                             gradient.setAttribute("y1", y1);
+                             gradient.setAttribute("x2", x2);
+                             gradient.setAttribute("y2", y2);
+                             
+                             const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+                             stop1.setAttribute("offset", "0%");
+                             stop1.setAttribute("stop-color", "#FF6C8F");
+                             
+                             const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+                             stop2.setAttribute("offset", "100%");
+                             stop2.setAttribute("stop-color", "#6FB6FF");
+                             
+                             gradient.appendChild(stop1);
+                             gradient.appendChild(stop2);
+                             
+                             const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                             defs.appendChild(gradient);
+                             svg.appendChild(defs);
+                             
+                             path.setAttribute("stroke", `url(#${gradientId})`);
+                             path.setAttribute("stroke-width", "2");
+                             path.setAttribute("stroke-linecap", "round");
+                             path.style.opacity = "0";
+                             
+                             svg.appendChild(path);
+                             
+                             // Animate
+                             setTimeout(() => {
+                                 path.style.opacity = "0.8";
+                                 path.style.strokeDasharray = "5,3";
+                                 path.style.transition = "opacity 0.3s ease";
+                                 
+                                 // Make profiles glow
+                                 femaleProfile.style.boxShadow = '0 0 12px rgba(255, 108, 143, 0.5)';
+                                 maleProfile.style.boxShadow = '0 0 12px rgba(111, 182, 255, 0.5)';
+                                 
+                                 // Fade out
+                                 setTimeout(() => {
+                                     path.style.opacity = '0';
+                                     femaleProfile.style.boxShadow = '';
+                                     maleProfile.style.boxShadow = '';
+                                     
+                                     // Remove SVG after animation completes
+                                     setTimeout(() => {
+                                         svg.remove();
+                                     }, 300);
+                                 }, 4000);
+                             }, 100);
+                    };
+                    
+                    // Create initial set of matches
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => createRandomMatch(), i * 300);
+                    }
+                    
+                    // Continue creating multiple matches at intervals
+                    setInterval(() => {
+                        // Create 3-5 matches each time
+                        const matchCount = 3 + Math.floor(Math.random() * 3);
+                        for (let i = 0; i < matchCount; i++) {
+                            setTimeout(() => createRandomMatch(), i * 200);
+                        }
+                    }, 1500);
+                    
+                }, 2000); // Wait for all dots to appear
+            }
+        });
+        
         // 키워드 간 연결선 애니메이션
         document.addEventListener('DOMContentLoaded', function() {
             const keywords = document.querySelectorAll('.keyword');
