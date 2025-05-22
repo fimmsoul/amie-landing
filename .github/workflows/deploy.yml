@@ -1,31 +1,106 @@
-name: Deploy to EC2
+name: Deploy to S3 and Amplify
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd /home/ec2-user/amie-landing
-            git pull origin main
-            docker-compose down
-            docker-compose build --no-cache
-            docker-compose up -d 
+      - name: Deploy to S3
+        run: |
+          aws s3 sync . s3://landing.amieonline.com --exclude ".git/*" --exclude ".github/*" --exclude "*.zip" --acl public-read
+          echo "Deployed to S3 bucket landing.amieonline.com"
+
+      - name: Trigger Amplify build
+        run: |
+          # 변수 설정
+          BUCKET_NAME="landing.amieonline.com"
+          REGION="ap-northeast-2"
+          AMPLIFY_APP_ID="djg07jxyb9lj2"
+          BRANCH_NAME="staging"
+          DEPLOYMENT_ZIP="deployment.zip"
+          S3_DEPLOYMENT_PATH="deployments/${DEPLOYMENT_ZIP}"
+          FORCE_MODE=true
+          
+          # 기존 작업 중지 (강제 모드)
+          if [ "$FORCE_MODE" = true ]; then
+            echo "Checking for running jobs..."
+            JOBS=$(aws amplify list-jobs --app-id ${AMPLIFY_APP_ID} --branch-name ${BRANCH_NAME} --status "PENDING" "RUNNING" "PROVISIONING" 2>/dev/null)
+            
+            if [ $? -eq 0 ]; then
+              JOB_IDS=$(echo $JOBS | jq -r '.jobSummaries[].jobId' 2>/dev/null)
+              
+              if [ ! -z "$JOB_IDS" ]; then
+                echo "Stopping existing jobs..."
+                for JOB_ID in $JOB_IDS; do
+                  echo "Stopping job ID ${JOB_ID}..."
+                  aws amplify stop-job --app-id ${AMPLIFY_APP_ID} --branch-name ${BRANCH_NAME} --job-id ${JOB_ID}
+                  sleep 2
+                done
+              fi
+            fi
+          fi
+          
+          # 파일 압축
+          echo "Compressing files for deployment..."
+          zip -r ${DEPLOYMENT_ZIP} . -x "*.git*" "*.github*" "*.zip"
+          
+          # 압축 파일을 S3에 업로드
+          echo "Uploading deployment file to S3..."
+          aws s3 cp ${DEPLOYMENT_ZIP} s3://${BUCKET_NAME}/${S3_DEPLOYMENT_PATH} --acl public-read
+          
+          # S3 URL 생성
+          S3_URL="https://${BUCKET_NAME}.s3.${REGION}.amazonaws.com/${S3_DEPLOYMENT_PATH}"
+          echo "Deployment file URL: ${S3_URL}"
+          
+          # 배포 생성
+          echo "Creating Amplify deployment..."
+          DEPLOYMENT_RESULT=$(aws amplify create-deployment --app-id ${AMPLIFY_APP_ID} --branch-name ${BRANCH_NAME} --file-map "{\"/*.html\":\"index.html\",\"/*.css\":\"styles.css\",\"/*.js\":\"script.js\"}" 2>&1)
+          CREATE_STATUS=$?
+          
+          if [ $CREATE_STATUS -eq 0 ]; then
+            # 배포 ID 추출
+            DEPLOYMENT_ID=$(echo $DEPLOYMENT_RESULT | jq -r '.jobId')
+            
+            if [ -z "$DEPLOYMENT_ID" ] || [ "$DEPLOYMENT_ID" = "null" ]; then
+              echo "Failed to get deployment ID"
+              echo "Response: $DEPLOYMENT_RESULT"
+              exit 1
+            fi
+            
+            # 배포 파일 업로드 및 시작
+            echo "Starting Amplify deployment with job ID: ${DEPLOYMENT_ID}"
+            aws amplify start-deployment --app-id ${AMPLIFY_APP_ID} --branch-name ${BRANCH_NAME} --job-id ${DEPLOYMENT_ID} --source-url ${S3_URL}
+            
+            if [ $? -eq 0 ]; then
+              echo "Successfully triggered Amplify deployment for app ID ${AMPLIFY_APP_ID} with job ID ${DEPLOYMENT_ID}"
+            else
+              echo "Failed to start Amplify deployment"
+              exit 1
+            fi
+          else
+            echo "Failed to create Amplify deployment"
+            echo "Error: $DEPLOYMENT_RESULT"
+            
+            if [[ "$DEPLOYMENT_RESULT" == *"was not finished"* ]]; then
+              echo "There's already a running job. Set FORCE_MODE=true to stop it."
+            fi
+            
+            exit 1
+          fi
+          
+          # 압축 파일 정리
+          rm -f ${DEPLOYMENT_ZIP}
